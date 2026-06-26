@@ -237,36 +237,57 @@
           }
         }
         
-        // Test 2 lits - PRIVILÉGIER LES LITS IDENTIQUES
+        // Test TOUS les 2 lits (identiques ET différents)
         best = null;
         minE = 99999;
+        var candidates = [];
         
-        // Première passe : 2 lits IDENTIQUES
-        for (i = 0; i < data.length; i++) {
-          eTotal = data[i].e + data[i].e;
-          rTotal = data[i].r + data[i].r;
-          if (eTotal <= 260 && rTotal >= rTarget && eTotal < minE) {
-            minE = eTotal;
-            best = { e1: data[i].e, r1: data[i].r, e2: data[i].e, r2: data[i].r, eTotal: eTotal, rTotal: rTotal, isDeuxLits: true };
-          }
-        }
-        
-        // Si solution identique trouvée, la retourner
-        if (best) return best;
-        
-        // Deuxième passe : 2 lits DIFFÉRENTS (seulement si pas de solution identique)
+        // Générer tous les 2 lits possibles
         for (i = 0; i < data.length; i++) {
           for (j = i; j < data.length; j++) {
             eTotal = data[i].e + data[j].e;
             rTotal = data[i].r + data[j].r;
-            if (eTotal <= 260 && rTotal >= rTarget && eTotal < minE) {
-              minE = eTotal;
-              best = { e1: data[i].e, r1: data[i].r, e2: data[j].e, r2: data[j].r, eTotal: eTotal, rTotal: rTotal, isDeuxLits: true };
+            if (eTotal <= 260 && rTotal >= rTarget) {
+              candidates.push({
+                e1: data[i].e,
+                r1: data[i].r,
+                e2: data[j].e,
+                r2: data[j].r,
+                eTotal: eTotal,
+                rTotal: rTotal,
+                isIdentique: (data[i].e === data[j].e),
+                ecart: Math.abs(data[i].e - data[j].e)
+              });
             }
           }
         }
         
-        return best;
+        if (candidates.length === 0) return null;
+        
+        // Trier par :
+        // 1. Épaisseur totale minimale
+        // 2. Lits identiques en priorité
+        // 3. Écart minimal
+        candidates.sort(function(a, b) {
+          if (a.eTotal !== b.eTotal) {
+            return a.eTotal - b.eTotal;
+          }
+          if (a.isIdentique !== b.isIdentique) {
+            return a.isIdentique ? -1 : 1;
+          }
+          return a.ecart - b.ecart;
+        });
+        
+        best = candidates[0];
+        return {
+          e1: best.e1,
+          r1: best.r1,
+          e2: best.e2,
+          r2: best.r2,
+          eTotal: best.eTotal,
+          rTotal: best.rTotal,
+          isDeuxLits: true
+        };
       }
 
       function fmt(v) { return Number(v).toFixed(2).replace(".", ","); }
