@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comparateur Rockacier vs Smartroof</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f4f6f8; color: #222; }
+    .lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, #D20014 0%, #9F000F 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+    .lock-screen h1 { color: #fff; font-size: 28px; margin-bottom: 8px; }
+    .lock-screen p { color: rgba(255,255,255,0.8); margin-bottom: 24px; font-size: 14px; }
+    .lock-screen input { padding: 14px 20px; border: none; border-radius: 10px; font-size: 16px; width: 280px; text-align: center; margin-bottom: 12px; }
+    .lock-screen button { padding: 14px 40px; background: #fff; color: #D20014; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .lock-screen button:hover { background: #f0f0f0; }
+    .lock-error { color: #ffcccc; font-size: 13px; margin-top: 12px; display: none; }
+    .hidden { display: none !important; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    .header { background: linear-gradient(180deg, #D20014 0%, #9F000F 100%); color: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+    .header h1 { font-size: 22px; font-weight: bold; margin-bottom: 4px; }
+    .header p { font-size: 14px; opacity: 0.95; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e0e0e0; }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #333; font-size: 13px; }
+    .input-group input { width: 100%; padding: 11px; border: 2px solid #D20014; border-radius: 8px; font-size: 16px; -webkit-appearance: none; appearance: none; background: #fff; }
+    .input-group input:focus { outline: none; border-color: #9F000F; }
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .results { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (min-width: 600px) { .results { grid-template-columns: 1fr 1fr; } }
+    .result-box { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 4px solid; }
+    .result-box.red { border-top-color: #D20014; }
+    .result-box.teal { border-top-color: #208684; }
+    .result-box h3 { margin: 0 0 12px 0; font-size: 16px; font-weight: bold; }
+    .result-box.red h3 { color: #D20014; }
+    .result-box.teal h3 { color: #208684; }
+    .big-number { font-size: 32px; font-weight: 900; margin: 12px 0; line-height: 1; }
+    .result-box.red .big-number { color: #D20014; }
+    .result-box.teal .big-number { color: #208684; }
+    .detail { font-size: 13px; color: #555; line-height: 1.5; }
+    .layer { background: #f9f9f9; padding: 8px 10px; border-radius: 6px; margin: 6px 0; font-size: 12px; border-left: 3px solid #ddd; }
+    .cost { background: #fff3f3; padding: 10px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #D20014; color: #D20014; font-weight: 700; font-size: 13px; }
+    .cost.teal { background: #f0fafa; border-left-color: #208684; color: #208684; }
+    .comparison { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 2px solid #208684; border-top: 4px solid #208684; }
+    .comparison h3 { margin: 0 0 16px 0; color: #208684; border-bottom: 2px solid #208684; padding-bottom: 10px; font-size: 16px; }
+    .comp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .comp-grid { grid-template-columns: 1fr; } }
+    .comp-item { background: #f9f9f9; padding: 14px; border-radius: 10px; border-left: 3px solid #ddd; text-align: center; }
+    .comp-item.red { border-left-color: #D20014; }
+    .comp-item.teal { border-left-color: #208684; }
+    .comp-item.grey { border-left-color: #656565; background: #f0f5f5; }
+    .comp-label { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 6px; }
+    .comp-value { font-size: 24px; font-weight: 900; margin: 6px 0; }
+    .comp-item.red .comp-value { color: #D20014; }
+    .comp-item.teal .comp-value { color: #208684; }
+    .comp-item.grey .comp-value { color: #656565; }
+    .comp-detail { font-size: 11px; color: #666; margin-top: 6px; }
+    .products { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (min-width: 600px) { .products { grid-template-columns: 1fr 1fr; } }
+    .product { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #e0e0e0; }
+    .product h2 { margin-top: 0; font-size: 16px; border-bottom: 3px solid; padding-bottom: 10px; }
+    .product.red h2 { color: #D20014; border-bottom-color: #D20014; }
+    .product.teal h2 { color: #208684; border-bottom-color: #208684; }
+    .info { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .info:last-child { border-bottom: none; }
+    .info-label { font-weight: 600; color: #333; }
+    .info-val { font-weight: 700; }
+    .info-val.red { color: #D20014; }
+    .info-val.teal { color: #208684; }
+    .note { background: #fff; border-left: 5px solid #656565; padding: 12px; border-radius: 8px; font-size: 12px; color: #333; line-height: 1.5; }
+    .status-ok { color: #2e7d32; font-weight: 700; }
+    .status-ko { color: #c62828; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- ÉCRAN DE MOT DE PASSE -->
+  <div class="lock-screen" id="lockScreen">
+    <h1>🔒 Accès protégé</h1>
+    <p>Comparateur d'isolation ROCKWOOL</p>
+    <input type="password" id="mdpInput" placeholder="Mot de passe" />
+    <button id="mdpBtn">Accéder</button>
+    <div class="lock-error" id="mdpError">❌ Mot de passe incorrect</div>
+  </div>
+
+  <!-- CONTENU PRINCIPAL (caché par défaut) -->
+  <div class="wrap hidden" id="mainContent">
+    <div class="header">
+      <h1>🔥 Comparateur d'isolation thermique</h1>
+      <p>Rockacier C nu energy vs Smartroof C</p>
+    </div>
+
+    <div class="card">
+      <div class="input-group">
+        <label>Résistance thermique visée (R) m²·K/W</label>
+        <input type="number" id="rTarget" step="0.01" min="0" value="3.50" />
+      </div>
+
+      <div style="border-top: 1px solid #eee; margin: 12px 0; padding-top: 12px;">
+        <h3 style="margin-top: 0; font-size: 13px; font-weight: bold;">💰 Prix €/m³</h3>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Rockacier C nu energy</label>
+            <input type="number" id="price1" step="0.01" min="0" value="0.00" />
+          </div>
+          <div class="input-group">
+            <label>Smartroof C</label>
+            <input type="number" id="price2" step="0.01" min="0" value="0.00" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-box red">
+        <h3>Rockacier C nu energy</h3>
+        <div class="big-number" id="ep1">-</div>
+        <div class="detail">
+          <strong>R :</strong> <span id="r1">-</span><br>
+          <strong>Statut :</strong> <span id="st1">-</span>
+          <div id="det1"></div>
+          <div id="cost1"></div>
+        </div>
+      </div>
+
+      <div class="result-box teal">
+        <h3>Smartroof C</h3>
+        <div class="big-number" id="ep2">-</div>
+        <div class="detail">
+          <strong>R :</strong> <span id="r2">-</span><br>
+          <strong>Statut :</strong> <span id="st2">-</span>
+          <div id="det2"></div>
+          <div id="cost2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison">
+      <h3>📊 Comparaison des coûts au m²</h3>
+      <div class="comp-grid">
+        <div class="comp-item red">
+          <div class="comp-label">Rockacier C</div>
+          <div class="comp-value" id="c1">-</div>
+          <div class="comp-detail" id="cd1"></div>
+        </div>
+        <div class="comp-item teal">
+          <div class="comp-label">Smartroof C</div>
+          <div class="comp-value" id="c2">-</div>
+          <div class="comp-detail" id="cd2"></div>
+        </div>
+        <div class="comp-item grey">
+          <div class="comp-label">Différence</div>
+          <div class="comp-value" id="diff">-</div>
+          <div class="comp-detail" id="diffd"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="products">
+      <div class="product red">
+        <h2>Rockacier C nu energy</h2>
+        <div class="info"><span class="info-label">Lambda</span><span class="info-val red">0.038 W/m·K</span></div>
+        <div class="info"><span class="info-label">Épaisseurs</span><span class="info-val red">80-200 mm</span></div>
+        <div class="info"><span class="info-label">Gamme R</span><span class="info-val red">2.10-5.25</span></div>
+        <div class="info"><span class="info-label">2 lits max</span><span class="info-val red">260 mm</span></div>
+        <div class="info"><span class="info-label">ACERMI</span><span class="info-val red">20-015-1449-12</span></div>
+      </div>
+
+      <div class="product teal">
+        <h2>Smartroof C</h2>
+        <div class="info"><span class="info-label">Lambda</span><span class="info-val teal">0.037 W/m·K</span></div>
+        <div class="info"><span class="info-label">Épaisseurs</span><span class="info-val teal">100-200 mm</span></div>
+        <div class="info"><span class="info-label">Gamme R</span><span class="info-val teal">2.70-5.40</span></div>
+        <div class="info"><span class="info-label">2 lits max</span><span class="info-val teal">260 mm</span></div>
+        <div class="info"><span class="info-label">ACERMI</span><span class="info-val teal">19/016/1381</span></div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>ℹ️ Tapez les valeurs, le résultat s'affiche en temps réel</strong>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ==========================================
+      // MOT DE PASSE - Changez-le ici :
+      var MOT_DE_PASSE = "rockwool2024";
+      // ==========================================
+
+      var lockScreen = document.getElementById("lockScreen");
+      var mainContent = document.getElementById("mainContent");
+      var mdpInput = document.getElementById("mdpInput");
+      var mdpBtn = document.getElementById("mdpBtn");
+      var mdpError = document.getElementById("mdpError");
+
+      function verifierMdp() {
+        if (mdpInput.value === MOT_DE_PASSE) {
+          lockScreen.style.display = "none";
+          mainContent.className = "wrap";
+          lancerCalculateur();
+        } else {
+          mdpError.style.display = "block";
+          mdpInput.value = "";
+        }
+      }
+
+      mdpBtn.onclick = verifierMdp;
+      mdpInput.onkeyup = function(e) {
+        if (e.keyCode === 13) verifierMdp();
+      };
+
+      // DONNÉES ACERMI
+      var rockData = [
+        { e: 80, r: 2.10 }, { e: 85, r: 2.20 }, { e: 90, r: 2.35 }, { e: 95, r: 2.50 },
+        { e: 100, r: 2.60 }, { e: 105, r: 2.75 }, { e: 110, r: 2.85 }, { e: 115, r: 3.00 },
+        { e: 120, r: 3.15 }, { e: 125, r: 3.25 }, { e: 130, r: 3.40 }, { e: 135, r: 3.55 },
+        { e: 140, r: 3.65 }, { e: 145, r: 3.80 }, { e: 150, r: 3.90 }, { e: 155, r: 4.05 },
+        { e: 160, r: 4.20 }, { e: 165, r: 4.30 }, { e: 170, r: 4.45 }, { e: 175, r: 4.60 },
+        { e: 180, r: 4.70 }, { e: 185, r: 4.85 }, { e: 190, r: 5.00 }, { e: 195, r: 5.10 },
+        { e: 200, r: 5.25 }
+      ];
+
+      var smartData = [
+        { e: 100, r: 2.70 }, { e: 105, r: 2.80 }, { e: 110, r: 2.95 }, { e: 115, r: 3.10 },
+        { e: 120, r: 3.20 }, { e: 125, r: 3.35 }, { e: 130, r: 3.50 }, { e: 135, r: 3.60 },
+        { e: 140, r: 3.75 }, { e: 145, r: 3.90 }, { e: 150, r: 4.05 }, { e: 155, r: 4.15 },
+        { e: 160, r: 4.30 }, { e: 165, r: 4.45 }, { e: 170, r: 4.55 }, { e: 175, r: 4.70 },
+        { e: 180, r: 4.85 }, { e: 185, r: 5.00 }, { e: 190, r: 5.10 }, { e: 195, r: 5.25 },
+        { e: 200, r: 5.40 }
+      ];
+
+      function findBest(data, rTarget) {
+        var i, j, eTotal, rTotal, best, minE;
+        for (i = 0; i < data.length; i++) {
+          if (data[i].r >= rTarget) {
+            return { e1: data[i].e, r1: data[i].r, e2: null, r2: null, eTotal: data[i].e, rTotal: data[i].r, isDeuxLits: false };
+          }
+        }
+        best = null;
+        minE = 99999;
+        for (i = 0; i < data.length; i++) {
+          for (j = i; j < data.length; j++) {
+            eTotal = data[i].e + data[j].e;
+            rTotal = data[i].r + data[j].r;
+            if (eTotal <= 260 && rTotal >= rTarget && eTotal < minE) {
+              minE = eTotal;
+              best = { e1: data[i].e, r1: data[i].r, e2: data[j].e, r2: data[j].r, eTotal: eTotal, rTotal: rTotal, isDeuxLits: true };
+            }
+          }
+        }
+        return best;
+      }
+
+      function fmt(v) { return Number(v).toFixed(2).replace(".", ","); }
+
+      function update() {
+        var rTarget = parseFloat(document.getElementById("rTarget").value) || 0;
+        var price1 = parseFloat(document.getElementById("price1").value) || 0;
+        var price2 = parseFloat(document.getElementById("price2").value) || 0;
+        var res1 = findBest(rockData, rTarget);
+        var res2 = findBest(smartData, rTarget);
+        var cost1Val, cost2Val, diffVal, diffPct;
+
+        // Rockacier
+        if (res1) {
+          document.getElementById("ep1").textContent = res1.eTotal + " mm";
+          document.getElementById("r1").textContent = fmt(res1.rTotal) + " m\u00B2\u00B7K/W";
+          document.getElementById("st1").innerHTML = "<span class='status-ok'>\u2705 Conforme</span>";
+          if (res1.isDeuxLits) {
+            document.getElementById("det1").innerHTML = "<div class='layer'><strong>Lit 1 :</strong> " + res1.e1 + " mm (R=" + fmt(res1.r1) + ")</div><div class='layer'><strong>Lit 2 :</strong> " + res1.e2 + " mm (R=" + fmt(res1.r2) + ")</div>";
+          } else {
+            document.getElementById("det1").innerHTML = "";
+          }
+          if (price1 > 0) {
+            cost1Val = (res1.eTotal / 1000) * price1;
+            document.getElementById("cost1").innerHTML = "<div class='cost'>\uD83D\uDCB0 " + fmt(cost1Val) + " \u20AC/m\u00B2</div>";
+          } else {
+            document.getElementById("cost1").innerHTML = "";
+          }
+        } else {
+          document.getElementById("ep1").textContent = "Hors gamme";
+          document.getElementById("r1").textContent = "-";
+          document.getElementById("st1").innerHTML = "<span class='status-ko'>\u274C R non conforme \u00E0 l'AT</span>";
+          document.getElementById("det1").innerHTML = "";
+          document.getElementById("cost1").innerHTML = "";
+        }
+
+        // Smartroof
+        if (res2) {
+          document.getElementById("ep2").textContent = res2.eTotal + " mm";
+          document.getElementById("r2").textContent = fmt(res2.rTotal) + " m\u00B2\u00B7K/W";
+          document.getElementById("st2").innerHTML = "<span class='status-ok'>\u2705 Conforme</span>";
+          if (res2.isDeuxLits) {
+            document.getElementById("det2").innerHTML = "<div class='layer'><strong>Lit 1 :</strong> " + res2.e1 + " mm (R=" + fmt(res2.r1) + ")</div><div class='layer'><strong>Lit 2 :</strong> " + res2.e2 + " mm (R=" + fmt(res2.r2) + ")</div>";
+          } else {
+            document.getElementById("det2").innerHTML = "";
+          }
+          if (price2 > 0) {
+            cost2Val = (res2.eTotal / 1000) * price2;
+            document.getElementById("cost2").innerHTML = "<div class='cost teal'>\uD83D\uDCB0 " + fmt(cost2Val) + " \u20AC/m\u00B2</div>";
+          } else {
+            document.getElementById("cost2").innerHTML = "";
+          }
+        } else {
+          document.getElementById("ep2").textContent = "Hors gamme";
+          document.getElementById("r2").textContent = "-";
+          document.getElementById("st2").innerHTML = "<span class='status-ko'>\u274C R non conforme \u00E0 l'AT</span>";
+          document.getElementById("det2").innerHTML = "";
+          document.getElementById("cost2").innerHTML = "";
+        }
+
+        // Comparaison
+        if (res1 && res2 && price1 > 0 && price2 > 0) {
+          cost1Val = (res1.eTotal / 1000) * price1;
+          cost2Val = (res2.eTotal / 1000) * price2;
+          diffVal = cost2Val - cost1Val;
+          diffPct = (diffVal / cost2Val) * 100;
+
+          document.getElementById("c1").textContent = fmt(cost1Val) + " \u20AC";
+          document.getElementById("cd1").textContent = price1 + " \u20AC/m\u00B3 x " + res1.eTotal + " mm";
+          document.getElementById("c2").textContent = fmt(cost2Val) + " \u20AC";
+          document.getElementById("cd2").textContent = price2 + " \u20AC/m\u00B3 x " + res2.eTotal + " mm";
+
+          if (diffVal > 0) {
+            document.getElementById("diff").textContent = "+" + fmt(diffPct) + "%";
+            document.getElementById("diffd").textContent = "Rockacier moins cher";
+          } else if (diffVal < 0) {
+            document.getElementById("diff").textContent = fmt(diffPct) + "%";
+            document.getElementById("diffd").textContent = "Smartroof moins cher";
+          } else {
+            document.getElementById("diff").textContent = "0 %";
+            document.getElementById("diffd").textContent = "Tarif identique";
+          }
+        } else {
+          document.getElementById("c1").textContent = "-";
+          document.getElementById("cd1").textContent = "";
+          document.getElementById("c2").textContent = "-";
+          document.getElementById("cd2").textContent = "";
+          document.getElementById("diff").textContent = "-";
+          document.getElementById("diffd").textContent = "";
+        }
+      }
+
+      function lancerCalculateur() {
+        var rTarget = document.getElementById("rTarget");
+        var price1 = document.getElementById("price1");
+        var price2 = document.getElementById("price2");
+
+        rTarget.onchange = update;
+        rTarget.onkeyup = update;
+        price1.onchange = update;
+        price1.onkeyup = update;
+        price2.onchange = update;
+        price2.onkeyup = update;
+
+        update();
+      }
+    })();
+  </script>
+
+</body>
+</html>
