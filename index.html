@@ -182,10 +182,8 @@
 
   <script>
     (function() {
-      // ==========================================
-      // MOT DE PASSE - Changez-le ici :
-      var MOT_DE_PASSE = "rockwool2024";
-      // ==========================================
+      // MOT DE PASSE
+      var MOT_DE_PASSE = "rw";
 
       var lockScreen = document.getElementById("lockScreen");
       var mainContent = document.getElementById("mainContent");
@@ -231,13 +229,32 @@
 
       function findBest(data, rTarget) {
         var i, j, eTotal, rTotal, best, minE;
+        
+        // Test 1 lit
         for (i = 0; i < data.length; i++) {
           if (data[i].r >= rTarget) {
             return { e1: data[i].e, r1: data[i].r, e2: null, r2: null, eTotal: data[i].e, rTotal: data[i].r, isDeuxLits: false };
           }
         }
+        
+        // Test 2 lits - PRIVILÉGIER LES LITS IDENTIQUES
         best = null;
         minE = 99999;
+        
+        // Première passe : 2 lits IDENTIQUES
+        for (i = 0; i < data.length; i++) {
+          eTotal = data[i].e + data[i].e;
+          rTotal = data[i].r + data[i].r;
+          if (eTotal <= 260 && rTotal >= rTarget && eTotal < minE) {
+            minE = eTotal;
+            best = { e1: data[i].e, r1: data[i].r, e2: data[i].e, r2: data[i].r, eTotal: eTotal, rTotal: rTotal, isDeuxLits: true };
+          }
+        }
+        
+        // Si solution identique trouvée, la retourner
+        if (best) return best;
+        
+        // Deuxième passe : 2 lits DIFFÉRENTS (seulement si pas de solution identique)
         for (i = 0; i < data.length; i++) {
           for (j = i; j < data.length; j++) {
             eTotal = data[i].e + data[j].e;
@@ -248,6 +265,7 @@
             }
           }
         }
+        
         return best;
       }
 
@@ -352,8 +370,6 @@
         price1.onkeyup = update;
         price2.onchange = update;
         price2.onkeyup = update;
-
-        update();
       }
     })();
   </script>
